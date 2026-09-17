@@ -4,6 +4,8 @@ from pathlib import Path
 from services.ticket_service import create_ticket
 from services.audit_service import create_audit_record
 
+from services.gemini_service import analyze_request_with_gemini
+
 
 # ---------------------------------------------------------
 # PATHS
@@ -568,7 +570,28 @@ def run_agent(
     # 1. Understand the issue
     # ---------------------------------------------
 
-    issue_type = detect_issue_type(message)
+    gemini_result = analyze_request_with_gemini(
+    message,
+    [
+        "security",
+        "password",
+        "vpn",
+        "laptop",
+        "printer",
+        "email",
+        "wifi",
+        "expense",
+        "software",
+        "remote_work",
+        "admin_access",
+        "unknown",
+    ],
+)
+
+    if gemini_result["success"]:
+        issue_type = gemini_result["issue_type"]
+    else:
+        issue_type = detect_issue_type(message)
 
     # ---------------------------------------------
     # 2. Retrieve policies
